@@ -1,0 +1,6 @@
+.vscode/
+.cfignore
+.gitignore
+.travis.yml
+README.md
+manifest.yml

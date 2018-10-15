@@ -1,0 +1,36 @@
+language: go
+
+script:
+  - go test -v -race ./...
+
+# Deploy
+# Bluemix
+deploy:
+  - provider: cloudfoundry
+    username: ${IBM_CLOUD_USER}
+    #########################
+    ## Add BLUEMIX_PASSWORD environment variable to your Travis project's settings
+    ## https://docs.travis-ci.com/user/environment-variables/#Defining-Variables-in-Repository-Settings
+    #########################
+    password: ${IBM_CLOUD_PASSWORD}
+    organization: ${IBM_CLOUD_USER}
+    space: production
+    region: eu-gb
+    api: https://api.eu-gb.bluemix.net
+    skip_cleanup: true
+    on:
+      branch: master
+  - provider: cloudfoundry
+    username: ${IBM_CLOUD_USER}
+    #########################
+    ## Add BLUEMIX_PASSWORD environment variable to your Travis project's settings
+    ## https://docs.travis-ci.com/user/environment-variables/#Defining-Variables-in-Repository-Settings
+    #########################
+    password: ${IBM_CLOUD_PASSWORD}
+    organization: ${IBM_CLOUD_USER}
+    space: staging
+    region: eu-gb
+    api: https://api.eu-gb.bluemix.net
+    skip_cleanup: true
+    on:
+      branch: staging

@@ -1,0 +1,5 @@
+.vscode/
+.travis.yml
+Dockerfile
+README.md
+TodoService
