@@ -3,8 +3,11 @@ language: go
 script:
   - go test -v -race ./...
 
-# Deploy
-# Bluemix
+env:
+  - GO111MODULE=on
+
+  # Deploy
+  # Bluemix
 deploy:
   - provider: cloudfoundry
     username: ${IBM_CLOUD_USER}
