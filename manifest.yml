@@ -5,7 +5,7 @@ applications:
     name: TodoService
     command: TodoService
     random-route: true
-    disk_quota: 32M
+    disk_quota: 64M
     buildpack: https://github.com/cloudfoundry/go-buildpack.git
     env:
       GOPACKAGENAME: github.com/sinnott74/TodoService
