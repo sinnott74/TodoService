@@ -1,5 +1,6 @@
-.vscode/
-.travis.yml
-Dockerfile
-README.md
-TodoService
+# Ignore everything
+*
+
+# Except
+!TodoService
+!manifest.yml
