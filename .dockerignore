@@ -4,3 +4,5 @@
 .travis.yml
 README.md
 manifest.yml
+Dockerfile
+TodoService
