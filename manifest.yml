@@ -1,6 +1,6 @@
 applications:
   - path: .
-    memory: 16M
+    memory: 20M
     instances: 1
     name: TodoService
     command: ./TodoService
