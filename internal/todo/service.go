@@ -10,8 +10,6 @@ import (
 	"github.com/rs/xid"
 )
 
-// *** stringerface ***
-
 // TodoService for Todos
 type TodoService interface {
 	GetAllForUser(ctx context.Context, username string) ([]Todo, error)
