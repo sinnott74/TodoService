@@ -14,12 +14,13 @@ go build
 
 ## Run
 
+This service requires
+
+- PostgreSQL to be running and have a `public.todos` which matches that of the Todo struct in `model.go`.
+- POSTGRES_URL environment varible set to the postgres url of the PostrgeSQL server above. e.g. postgres://etc...
+
 ```
 ./TodoService
 ```
 
 TodoService will start a http server on the port specified in by Environment variable `PORT`, which defaults to `8000`.
-
-## NB!
-
-NOTE: Curently TodoService is an in memory service
