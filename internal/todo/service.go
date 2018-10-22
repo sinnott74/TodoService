@@ -2,10 +2,13 @@ package todo
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"math/rand"
 	"sync"
 	"time"
+
+	uuid "github.com/satori/go.uuid"
 
 	"github.com/rs/xid"
 )
@@ -28,39 +31,79 @@ var (
 	ErrNotFound = errors.New("Not found")
 )
 
-// // NewPSQLTodoService creates a Todo service which uses Postgres for persistence
-// func NewPSQLTodoService() TodoService {
-// 	return &psqlService{}
-// }
+// NewPostgresService creates a Todo service which uses Postgres for persistence
+func NewPostgresService(db *sql.DB) TodoService {
+	return &postgresService{db}
+}
 
-// // psqlService is a Postgres implementation of the service
-// type psqlService struct {
-// }
+// psqlService is a Postgres implementation of the service
+type postgresService struct {
+	db *sql.DB
+}
 
-// // Get all Todos from the database
-// func (s *psqlService) GetAllForUser(ctx context.Context, username string) ([]Todo, error) {
-// 	return []Todo{}, nil
-// }
+// Get all Todos from the database
+func (s *postgresService) GetAllForUser(ctx context.Context, username string) ([]Todo, error) {
 
-// // Get an Todos from the database
-// func (s *psqlService) GetByID(ctx context.Context, id string) (Todo, error) {
-// 	return Todo{}, nil
-// }
+	todos := []Todo{}
+	rows, err := s.db.QueryContext(ctx, "SELECT * FROM public.todos WHERE username=$1", username)
+	if err != nil {
+		return todos, err
+	}
+	defer rows.Close()
 
-// // Add a Todo to the database
-// func (s *psqlService) Add(ctx context.Context, todo Todo) (Todo, error) {
-// 	return Todo{}, nil
-// }
+	for rows.Next() {
+		todo := Todo{}
+		err = rows.Scan(&todo.ID, &todo.Username, &todo.Text, &todo.Completed, &todo.CreatedOn, &todo.CompletedOn)
+		if err != nil {
+			return todos, err
+		}
+		todos = append(todos, todo)
+	}
 
-// // Update a Todo in the database
-// func (s *psqlService) Update(ctx context.Context, id string, todo Todo) error {
-// 	return nil
-// }
+	err = rows.Err()
 
-// // Delete a Todo in the database
-// func (s *psqlService) Delete(ctx context.Context, id string) error {
-// 	return nil
-// }
+	return todos, err
+}
+
+// Get an Todos from the database
+func (s *postgresService) GetByID(ctx context.Context, id string) (Todo, error) {
+	todo := Todo{}
+	row := s.db.QueryRowContext(ctx, "SELECT * FROM public.todos WHERE id = $1", id)
+	err := row.Scan(&todo.ID, &todo.Username, &todo.Text, &todo.Completed, &todo.CreatedOn, &todo.CompletedOn)
+	return todo, err
+}
+
+// Add a Todo to the database
+func (s *postgresService) Add(ctx context.Context, todo Todo) (Todo, error) {
+
+	todo.ID = uuid.NewV4().String()
+	todo.CreatedOn = time.Now().UTC()
+	_, err := s.db.ExecContext(ctx, "INSERT INTO public.todos (id, username, text, completed, createdon, completedon) VALUES ($1,$2,$3,$4,$5,$6)", todo.ID, todo.Username, todo.Text, todo.Completed, todo.CreatedOn, todo.CompletedOn)
+	return todo, err
+}
+
+// Update a Todo in the database
+func (s *postgresService) Update(ctx context.Context, id string, todo Todo) error {
+	_, err := s.db.ExecContext(ctx, "UPDATE public.todos SET id=$1, username=$2, text=$3, completed=$4, createdon=$5, completedon=$6 WHERE id = $7", todo.ID, todo.Username, todo.Text, todo.Completed, todo.CreatedOn, todo.CompletedOn, id)
+	return err
+}
+
+// Delete a Todo in the database
+func (s *postgresService) Delete(ctx context.Context, id string) error {
+	res, err := s.db.ExecContext(ctx, "DELETE FROM public.todos WHERE id = $1", id)
+	if err != nil {
+		return err
+	}
+
+	numRowAffected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if numRowAffected == 0 {
+		return ErrNotFound
+	}
+	return nil
+}
 
 // NewInmemTodoService creates an in memory Todo service
 func NewInmemTodoService() TodoService {
