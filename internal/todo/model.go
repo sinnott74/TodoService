@@ -12,6 +12,7 @@ type Todo struct {
 	Completed   bool      `json:"completed"`
 	CreatedOn   time.Time `json:"created_on"`
 	CompletedOn time.Time `json:"completed_on"`
+	Flagged     bool      `json:"flagged"`
 }
 
 // CREATE TABLE public.todos
@@ -19,8 +20,9 @@ type Todo struct {
 //     id uuid NOT NULL,
 //     username character varying(50) COLLATE pg_catalog."default" NOT NULL,
 //     text text COLLATE pg_catalog."default",
-//     completed boolean,
+//     completed boolean DEFAULT false,
 //     createdon timestamp with time zone NOT NULL,
 //     completedon timestamp with time zone,
+//		 flagged boolean DEFAULT false,
 //     CONSTRAINT todos_pkey PRIMARY KEY (id)
 // )
