@@ -195,6 +195,19 @@ func (s *inmemService) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
+// Health check the In memory TodoService business process
 func (s *inmemService) Health(ctx context.Context) error {
-	return nil
+	todo := Todo{}
+	addedTodo, err := s.Add(ctx, todo)
+	if err != nil {
+		return err
+	}
+	retrievedTodo, err := s.GetByID(ctx, addedTodo.ID)
+	if err != nil {
+		return err
+	}
+	if addedTodo != retrievedTodo {
+		return errors.New("health check error retrieving todo")
+	}
+	return s.Delete(ctx, addedTodo.ID)
 }
