@@ -13,6 +13,7 @@ type TodoEndpoints struct {
 	AddEndpoint           endpoint.Endpoint
 	UpdateEndpoint        endpoint.Endpoint
 	DeleteEndpoint        endpoint.Endpoint
+	HealthEndpoint        endpoint.Endpoint
 }
 
 // MakeTodoEndpoints returns an Endpoints struct where each endpoint invokes
@@ -24,6 +25,7 @@ func MakeTodoEndpoints(s TodoService) TodoEndpoints {
 		AddEndpoint:           MakeAddEndpoint(s),
 		UpdateEndpoint:        MakeUpdateEndpoint(s),
 		DeleteEndpoint:        MakeDeleteEndpoint(s),
+		HealthEndpoint:        MakeHealthEndpoint(s),
 	}
 }
 
@@ -102,5 +104,18 @@ func MakeDeleteEndpoint(s TodoService) endpoint.Endpoint {
 		req := request.(DeleteRequest)
 		err := s.Delete(ctx, req.ID)
 		return DeleteResponse{}, err
+	}
+}
+
+type HealthRequest struct {
+}
+
+type HealthResponse struct {
+}
+
+func MakeHealthEndpoint(s TodoService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		err := s.Health(ctx)
+		return HealthResponse{}, err
 	}
 }

@@ -41,11 +41,11 @@ func MakeHTTPHandler(endpoints TodoEndpoints) http.Handler {
 	r := chi.NewRouter()
 	r.Use(chiMiddleware.Logger)
 	r.Use(chiMiddleware.StripSlashes)
-	r.Use(middleware.JWT(jwtOptions))
-	r.Use(middleware.DefaultEtag)
-	r.Use(chiMiddleware.DefaultCompress)
 
 	todoRouter := chi.NewRouter()
+	todoRouter.Use(middleware.JWT(jwtOptions))
+	todoRouter.Use(middleware.DefaultEtag)
+	todoRouter.Use(chiMiddleware.DefaultCompress)
 
 	todoRouter.Get("/", httptransport.NewServer(
 		endpoints.GetAllForUserEndPoint,
@@ -83,6 +83,13 @@ func MakeHTTPHandler(endpoints TodoEndpoints) http.Handler {
 	).ServeHTTP)
 
 	r.Mount("/api/todos", todoRouter)
+
+	r.Get("/health", httptransport.NewServer(
+		endpoints.HealthEndpoint,
+		decodeHealthRequest,
+		encodeResponse,
+		options...,
+	).ServeHTTP)
 
 	return r
 }
@@ -127,6 +134,10 @@ func decodeDeleteRequest(ctx context.Context, r *http.Request) (request interfac
 		return nil, ErrMissingParam
 	}
 	return DeleteRequest{id}, err
+}
+
+func decodeHealthRequest(ctx context.Context, r *http.Request) (request interface{}, err error) {
+	return HealthRequest{}, err
 }
 
 func encodeResponse(ctx context.Context, w http.ResponseWriter, response interface{}) error {

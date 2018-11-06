@@ -20,6 +20,7 @@ type TodoService interface {
 	Add(ctx context.Context, todo Todo) (Todo, error)
 	Update(ctx context.Context, id string, todo Todo) error
 	Delete(ctx context.Context, id string) error
+	Health(ctx context.Context) error
 }
 
 // *** Implementation ***
@@ -105,6 +106,11 @@ func (s *postgresService) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
+// Health perform service health check. verifies that DB is accessible
+func (s *postgresService) Health(ctx context.Context) error {
+	return s.db.PingContext(ctx)
+}
+
 // NewInmemTodoService creates an in memory Todo service
 func NewInmemTodoService() TodoService {
 	s := &inmemService{
@@ -186,5 +192,9 @@ func (s *inmemService) Delete(ctx context.Context, id string) error {
 	}
 
 	delete(s.m, id)
+	return nil
+}
+
+func (s *inmemService) Health(ctx context.Context) error {
 	return nil
 }
