@@ -46,7 +46,7 @@ type postgresService struct {
 func (s *postgresService) GetAllForUser(ctx context.Context, username string) ([]Todo, error) {
 
 	todos := []Todo{}
-	rows, err := s.db.QueryContext(ctx, "SELECT * FROM public.todos WHERE username=$1", username)
+	rows, err := s.db.QueryContext(ctx, "SELECT * FROM public.todo WHERE username=$1", username)
 	if err != nil {
 		return todos, err
 	}
@@ -69,7 +69,7 @@ func (s *postgresService) GetAllForUser(ctx context.Context, username string) ([
 // Get an Todos from the database
 func (s *postgresService) GetByID(ctx context.Context, id string) (Todo, error) {
 	todo := Todo{}
-	row := s.db.QueryRowContext(ctx, "SELECT * FROM public.todos WHERE id = $1", id)
+	row := s.db.QueryRowContext(ctx, "SELECT * FROM public.todo WHERE id = $1", id)
 	err := row.Scan(&todo.ID, &todo.Username, &todo.Text, &todo.Completed, &todo.CreatedOn, &todo.CompletedOn, &todo.Flagged)
 	return todo, err
 }
@@ -79,19 +79,19 @@ func (s *postgresService) Add(ctx context.Context, todo Todo) (Todo, error) {
 
 	todo.ID = uuid.NewV4().String()
 	todo.CreatedOn = time.Now().UTC()
-	_, err := s.db.ExecContext(ctx, "INSERT INTO public.todos (id, username, text, completed, createdon, completedon, flagged) VALUES ($1,$2,$3,$4,$5,$6,$7)", todo.ID, todo.Username, todo.Text, todo.Completed, todo.CreatedOn, todo.CompletedOn, todo.Flagged)
+	_, err := s.db.ExecContext(ctx, "INSERT INTO public.todo (id, username, text, completed, createdon, completedon, flagged) VALUES ($1,$2,$3,$4,$5,$6,$7)", todo.ID, todo.Username, todo.Text, todo.Completed, todo.CreatedOn, todo.CompletedOn, todo.Flagged)
 	return todo, err
 }
 
 // Update a Todo in the database
 func (s *postgresService) Update(ctx context.Context, id string, todo Todo) error {
-	_, err := s.db.ExecContext(ctx, "UPDATE public.todos SET id=$1, username=$2, text=$3, completed=$4, createdon=$5, completedon=$6, flagged=$7 WHERE id = $8", todo.ID, todo.Username, todo.Text, todo.Completed, todo.CreatedOn, todo.CompletedOn, todo.Flagged, id)
+	_, err := s.db.ExecContext(ctx, "UPDATE public.todo SET id=$1, username=$2, text=$3, completed=$4, createdon=$5, completedon=$6, flagged=$7 WHERE id = $8", todo.ID, todo.Username, todo.Text, todo.Completed, todo.CreatedOn, todo.CompletedOn, todo.Flagged, id)
 	return err
 }
 
 // Delete a Todo in the database
 func (s *postgresService) Delete(ctx context.Context, id string) error {
-	res, err := s.db.ExecContext(ctx, "DELETE FROM public.todos WHERE id = $1", id)
+	res, err := s.db.ExecContext(ctx, "DELETE FROM public.todo WHERE id = $1", id)
 	if err != nil {
 		return err
 	}
