@@ -12,7 +12,6 @@ require (
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/lib/pq v1.0.0
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/rs/xid v1.2.1
 	github.com/satori/go.uuid v1.2.0
 	github.com/sinnott74/go-http-middleware v0.0.0-20181015120859-cd03c544552c
 	github.com/stretchr/testify v1.2.2

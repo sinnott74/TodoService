@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/rs/xid"
+	"github.com/satori/go.uuid"
 
 	"github.com/stretchr/testify/require"
 )
@@ -125,7 +125,7 @@ func TestUpdateTodo(t *testing.T) {
 // TestDeleteNotFound test deleting a todo by ID which doesn't exist
 func TestDeleteNotFound(t *testing.T) {
 	todoService := NewInmemTodoService()
-	id := xid.New().String()
+	id := uuid.NewV4().String()
 	err := todoService.Delete(context.Background(), id)
 	require.EqualError(t, err, "Not found", "Not found error expected to be returned")
 }
@@ -137,7 +137,7 @@ func TestUpdateNotFound(t *testing.T) {
 	username := "test@test.com"
 
 	todo := Todo{
-		ID:        xid.New().String(),
+		ID:        uuid.NewV4().String(),
 		Username:  username,
 		Text:      "Finish off this microservice",
 		Completed: false,
@@ -152,12 +152,12 @@ func TestUpdateInconsistentIDs(t *testing.T) {
 	todoService := NewInmemTodoService()
 
 	todo := Todo{
-		ID:        xid.New().String(),
+		ID:        uuid.NewV4().String(),
 		Username:  "test@test.com",
 		Text:      "Finish off this microservice",
 		Completed: false,
 	}
 
-	err := todoService.Update(context.Background(), xid.New().String(), todo)
+	err := todoService.Update(context.Background(), uuid.NewV4().String(), todo)
 	require.EqualError(t, err, "Inconsistent IDs", "Inconsistent IDs error expected to be returned")
 }

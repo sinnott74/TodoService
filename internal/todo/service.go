@@ -8,9 +8,7 @@ import (
 	"sync"
 	"time"
 
-	uuid "github.com/satori/go.uuid"
-
-	"github.com/rs/xid"
+	"github.com/satori/go.uuid"
 )
 
 // TodoService for Todos
@@ -158,7 +156,7 @@ func (s *inmemService) Add(ctx context.Context, todo Todo) (Todo, error) {
 	s.Lock()
 	defer s.Unlock()
 
-	todo.ID = xid.New().String()
+	todo.ID = uuid.NewV4().String()
 	todo.CreatedOn = time.Now()
 
 	s.m[todo.ID] = todo
