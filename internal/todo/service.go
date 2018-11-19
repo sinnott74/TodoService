@@ -69,6 +69,9 @@ func (s *postgresService) GetByID(ctx context.Context, id string) (Todo, error) 
 	todo := Todo{}
 	row := s.db.QueryRowContext(ctx, "SELECT * FROM public.todo WHERE id = $1", id)
 	err := row.Scan(&todo.ID, &todo.Username, &todo.Text, &todo.Completed, &todo.CreatedOn, &todo.CompletedOn, &todo.Flagged)
+	if err == sql.ErrNoRows {
+		return todo, ErrNotFound
+	}
 	return todo, err
 }
 
