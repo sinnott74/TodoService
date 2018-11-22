@@ -30,6 +30,10 @@ var (
 	ErrNotFound = errors.New("Not found")
 )
 
+/**************************************************************
+ * 										POSTGRES SERVICE												*
+ **************************************************************/
+
 // NewPostgresService creates a Todo service which uses Postgres for persistence
 func NewPostgresService(db *sql.DB) TodoService {
 	return &postgresService{db}
@@ -59,9 +63,7 @@ func (s *postgresService) GetAllForUser(ctx context.Context, username string) ([
 		todos = append(todos, todo)
 	}
 
-	err = rows.Err()
-
-	return todos, err
+	return todos, rows.Err()
 }
 
 // Get an Todos from the database
@@ -80,14 +82,37 @@ func (s *postgresService) Add(ctx context.Context, todo Todo) (Todo, error) {
 
 	todo.ID = uuid.NewV4().String()
 	todo.CreatedOn = time.Now().UTC()
-	_, err := s.db.ExecContext(ctx, "INSERT INTO public.todo (id, username, text, completed, createdon, completedon, flagged) VALUES ($1,$2,$3,$4,$5,$6,$7)", todo.ID, todo.Username, todo.Text, todo.Completed, todo.CreatedOn, todo.CompletedOn, todo.Flagged)
-	return todo, err
+	res, err := s.db.ExecContext(ctx, "INSERT INTO public.todo (id, username, text, completed, createdon, completedon, flagged) VALUES ($1,$2,$3,$4,$5,$6,$7)", todo.ID, todo.Username, todo.Text, todo.Completed, todo.CreatedOn, todo.CompletedOn, todo.Flagged)
+	if err != nil {
+		todo.ID = ""
+		return todo, err
+	}
+	numRowAffected, err := res.RowsAffected()
+	if err != nil {
+		todo.ID = ""
+		return todo, err
+	}
+	if numRowAffected != 1 {
+		todo.ID = ""
+		return todo, errors.New("Single row insert error")
+	}
+	return todo, nil
 }
 
 // Update a Todo in the database
 func (s *postgresService) Update(ctx context.Context, id string, todo Todo) error {
-	_, err := s.db.ExecContext(ctx, "UPDATE public.todo SET id=$1, username=$2, text=$3, completed=$4, createdon=$5, completedon=$6, flagged=$7 WHERE id = $8", todo.ID, todo.Username, todo.Text, todo.Completed, todo.CreatedOn, todo.CompletedOn, todo.Flagged, id)
-	return err
+	res, err := s.db.ExecContext(ctx, "UPDATE public.todo SET id=$1, username=$2, text=$3, completed=$4, createdon=$5, completedon=$6, flagged=$7 WHERE id = $8", todo.ID, todo.Username, todo.Text, todo.Completed, todo.CreatedOn, todo.CompletedOn, todo.Flagged, id)
+	if err != nil {
+		return err
+	}
+	numRowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if numRowsAffected != 1 {
+		return ErrNotFound
+	}
+	return nil
 }
 
 // Delete a Todo in the database
@@ -111,6 +136,10 @@ func (s *postgresService) Delete(ctx context.Context, id string) error {
 func (s *postgresService) Health(ctx context.Context) error {
 	return s.db.PingContext(ctx)
 }
+
+/**************************************************************
+ * 										IN MEMORY SERVICE												*
+ **************************************************************/
 
 // NewInmemTodoService creates an in memory Todo service
 func NewInmemTodoService() TodoService {
